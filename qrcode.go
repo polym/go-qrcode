@@ -45,8 +45,8 @@ import (
 	"log"
 	"os"
 
-	bitset "github.com/skip2/go-qrcode/bitset"
-	reedsolomon "github.com/skip2/go-qrcode/reedsolomon"
+	bitset "github.com/polym/go-qrcode/bitset"
+	reedsolomon "github.com/polym/go-qrcode/reedsolomon"
 )
 
 // Encode a QR Code and return a raw PNG image.
@@ -55,10 +55,10 @@ import (
 // a larger image is silently returned.
 //
 // To serve over HTTP, remember to send a Content-Type: image/png header.
-func Encode(content string, level RecoveryLevel, size int) ([]byte, error) {
+func Encode(content string, level RecoveryLevel, size int, fg, bg color.Color) ([]byte, error) {
 	var q *QRCode
 
-	q, err := New(content, level)
+	q, err := New(content, level, fg, bg)
 
 	if err != nil {
 		return nil, err
@@ -71,10 +71,10 @@ func Encode(content string, level RecoveryLevel, size int) ([]byte, error) {
 //
 // size is both the width and height in pixels. If size is too small then a
 // larger image is silently written.
-func WriteFile(content string, level RecoveryLevel, size int, filename string) error {
+func WriteFile(content string, level RecoveryLevel, size int, filename string, fg, bg color.Color) error {
 	var q *QRCode
 
-	q, err := New(content, level)
+	q, err := New(content, level, fg, bg)
 
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ type QRCode struct {
 //	q, err := qrcode.New("my content", qrcode.Medium)
 //
 // An error occurs if the content is too long.
-func New(content string, level RecoveryLevel) (*QRCode, error) {
+func New(content string, level RecoveryLevel, fg, bg color.Color) (*QRCode, error) {
 	encoders := []dataEncoderType{dataEncoderType1To9, dataEncoderType10To26,
 		dataEncoderType27To40}
 
@@ -146,8 +146,8 @@ func New(content string, level RecoveryLevel) (*QRCode, error) {
 		Level:         level,
 		VersionNumber: chosenVersion.version,
 
-		ForegroundColor: color.Black,
-		BackgroundColor: color.White,
+		ForegroundColor: fg,
+		BackgroundColor: bg,
 
 		encoder: encoder,
 		data:    encoded,
